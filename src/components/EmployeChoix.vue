@@ -29,6 +29,24 @@
         </v-checkbox>
       </v-col>
     </v-row>
+
+
+    <v-row no-gutters>
+      <v-col cols="12" md="12">
+        <v-list max-height="400">
+          <v-list-subheader>{{ libelleListe }}</v-list-subheader>
+          <v-list-item v-for="employe in employesListe" :key="employe.idemploye" :value="employe.idemploye"
+            :class="`bactif${employe.bactif}`" @click="choixEmploye(employe)">
+            <template v-slot:title>
+              <span class="listeempnom" v-html="`${employe.nom} ${employe.prenom}`"></span>
+              <span class="listeemplogin" v-html="` (${employe.login}).`"></span>
+              <span class="listeempuo" v-html="` ${employe.unitetree}`"></span>
+            </template>
+          </v-list-item>
+        </v-list>
+      </v-col>
+    </v-row>
+
   </v-container>
 
   <v-dialog v-model="dialogChoixUO" max-width="1280">
@@ -49,10 +67,12 @@
 
 <script setup lang="ts">
 import type { VTextField } from 'vuetify/components'
+import type { Employe, ApiResponseEL } from '../axioscalls.js'
 
 import { ref, watch, computed, onMounted, nextTick } from 'vue'
 import { detectStringType } from '../employeChoix'
 import UniteOrgChoix from './UniteOrgChoix.vue'
+import { getEmployesListe } from '../axioscalls.js'
 
 interface Props {
   modeChoix?: string
@@ -61,11 +81,19 @@ interface Props {
   ssPage?: string
 }
 
+interface Critere {
+  iduniteorg: number,
+  typecritere: string,
+  critere: string,
+  bemployedesactive: 0 | 1
+  nombremaximumretour: number
+}
+
 const props = withDefaults(defineProps<Props>(), {
   modeChoix: 'unique',
   nombreMaximumRetour: 100,
   ssServer: '',
-  ssPage: '/goeland/employe/axios/employe_liste.php'
+  ssPage: '/goeland/employe/axios/employe_liste2.php'
 })
 
 interface UniteOrganisationnelle {
@@ -80,6 +108,8 @@ const txtCritere = ref<string>('')
 const bEmployeDesactive = ref<boolean>(false)
 const inpTxtCritere = ref<VTextField | null>(null)
 const dialogChoixUO = ref<boolean>(false)
+const employesListe = ref<Employe[]>([])
+const libelleListe = ref<string>('choix employés (0)')
 
 let typingTimer: ReturnType<typeof setTimeout> | null = null
 const typingInterval: number = 700
@@ -102,10 +132,41 @@ const onInputCritere = (value: string | null | undefined): void => {
 }
 
 const prepareRechercheEmployes = (): void => {
-  const critere: string = txtCritere.value
+  txtCritere.value = txtCritere.value.trim()
   const typeCritere: string = detectStringType(txtCritere.value)
-  console.log(`todo la suite ${typeCritere} ${critere}`)
+  if (critereUniteId.value > 1 || txtCritere.value !== '') {
+    rechercheEmployes(critereUniteId.value, typeCritere, txtCritere.value, bEmployeDesactive.value, props.nombreMaximumRetour)
+  }
 }
+
+const rechercheEmployes = async (idUO: number, typeCritere: string, critere: string, bEmployeDesactive: boolean, nbrRetour: number): Promise<void> => {
+  let ibEmployeDesactive: 0 | 1 = 0
+  if (bEmployeDesactive) {
+    ibEmployeDesactive = 1
+  }
+
+  const oCritere: Critere = {
+    "iduniteorg": idUO,
+    "typecritere": typeCritere,
+    "critere": critere,
+    "bemployedesactive": ibEmployeDesactive,
+    "nombremaximumretour": nbrRetour
+  }
+  console.log(JSON.stringify(oCritere))
+  const response: ApiResponseEL = await getEmployesListe(props.ssServer, props.ssPage, JSON.stringify(oCritere))
+  employesListe.value = response.success && response.data ? response.data : []
+  if (employesListe.value.length < nbrRetour) {
+    libelleListe.value = `Choix employes (${employesListe.value.length})`
+  } else {
+    libelleListe.value = `Choix employe (${employesListe.value.length}). Attention, plus de ${nbrRetour} employés correspondent aux critères`
+  }
+
+}
+
+const choixEmploye = (employe: Employe): void => {
+  
+}
+
 
 const choixUnite = (): void => {
   dialogChoixUO.value = true
@@ -117,15 +178,14 @@ const receptionUniteOrg = (jsonData: string) => {
   const uoChoisie: UniteOrganisationnelle = JSON.parse(jsonData)
   critereUniteId.value = uoChoisie.id
   critereUniteLibelle.value = uoChoisie.description
-  if (critereUniteId.value > 1) {
-    prepareRechercheEmployes()
-  }
+  prepareRechercheEmployes()
 
 }
 
 const supprimeCritereUnite = (): void => {
   critereUniteId.value = 0
   critereUniteLibelle.value = '- toutes -'
+  prepareRechercheEmployes()
 }
 
 const closeChoixUO = (): void => {

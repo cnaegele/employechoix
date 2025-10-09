@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { getUnitesOrgListe } from '../axioscalls.js'
-import type { UniteOrg, ApiResponse }  from '../axioscalls.js'
+import type { UniteOrg, ApiResponseUL }  from '../axioscalls.js'
 
 interface Props {
   modeChoix?: string
@@ -75,7 +75,7 @@ const ssServer = ref<string>(props.ssServer)
 const ssPage = ref<string>(props.ssPage)
 const jsonCriteres: { unitehorsvdl: boolean } = { "unitehorsvdl" : buniteHorsVdL.value }
 
-const response: ApiResponse = await getUnitesOrgListe(ssServer.value, ssPage.value, JSON.stringify(jsonCriteres))
+const response: ApiResponseUL = await getUnitesOrgListe(ssServer.value, ssPage.value, JSON.stringify(jsonCriteres))
 const unitesOrgListe: UniteOrg[] = response.success && response.data ? response.data : []
 
 const unitesOrgTree = ref<UniteOrgTree[]>(transforUOListe2UOTree(unitesOrgListe))
