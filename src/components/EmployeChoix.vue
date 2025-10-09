@@ -132,8 +132,13 @@ const onInputCritere = (value: string | null | undefined): void => {
 }
 
 const prepareRechercheEmployes = (): void => {
-  txtCritere.value = txtCritere.value.trim()
-  const typeCritere: string = detectStringType(txtCritere.value)
+  libelleListe.value = 'choix employés (0)'
+  employesListe.value = []
+  let typeCritere: string = 'nom'
+  if (txtCritere.value !== null) {
+    typeCritere = detectStringType(txtCritere.value)
+    txtCritere.value = txtCritere.value.trim()
+  }
   if (critereUniteId.value > 1 || txtCritere.value !== '') {
     rechercheEmployes(critereUniteId.value, typeCritere, txtCritere.value, bEmployeDesactive.value, props.nombreMaximumRetour)
   }
@@ -195,4 +200,21 @@ const closeChoixUO = (): void => {
 
 </script>
 
-<style scoped></style>
+<style scoped>
+.listeempnom {
+    font-weight: bold;
+}
+.listeemplogin {
+    font-size: small;
+}.listeempuo {
+    font-size: small;
+    font-style: italic;
+}
+.bactif0 {
+    font-style: italic;
+    color: rgb(252, 182, 182)
+}
+.bactif1 {
+    font-style: normal;
+}
+</style>
