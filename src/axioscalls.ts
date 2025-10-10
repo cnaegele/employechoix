@@ -41,7 +41,7 @@ interface ApiResponse<T> {
 }
 
 export async function getUnitesOrgListe(server: string = '', page: string, jsonCriteres: string = '{}'): Promise<ApiResponseUL> {
-  console.log(jsonCriteres)
+  if (import.meta.env.DEV) {console.log(jsonCriteres)}
   const urluol: string = `${server}${page}`
   const params = new URLSearchParams([['jsoncriteres', jsonCriteres]])
   try {
@@ -51,7 +51,7 @@ export async function getUnitesOrgListe(server: string = '', page: string, jsonC
       "message": `ok`,
       "data": response.data
     }
-    console.log(respData)
+    if (import.meta.env.DEV) {console.log(respData)}
     return respData
   } catch (error) {
     return traiteAxiosError(error as AxiosError)
@@ -59,7 +59,7 @@ export async function getUnitesOrgListe(server: string = '', page: string, jsonC
 }
 
 export async function getEmployesListe(server: string = '', page: string, jsonCriteres: string = '{}'): Promise<ApiResponseEL> {
-  console.log(jsonCriteres)
+  if (import.meta.env.DEV) {console.log(jsonCriteres)}
   const url: string = `${server}${page}`
   const params = new URLSearchParams([['jsoncriteres', jsonCriteres]])
   try {
@@ -69,7 +69,7 @@ export async function getEmployesListe(server: string = '', page: string, jsonCr
       "message": `ok`,
       "data": response.data
     }
-    console.log(respData)
+    if (import.meta.env.DEV) {console.log(respData)}
     return respData
   } catch (error) {
     return traiteAxiosError(error as AxiosError)

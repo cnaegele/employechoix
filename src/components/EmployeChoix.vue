@@ -140,8 +140,6 @@ const employesListeChoisi = ref<Employe[]>([])
 let typingTimer: ReturnType<typeof setTimeout> | null = null
 const typingInterval: number = 700
 const onInputCritere = (value: string | null | undefined): void => {
-  // console.log('oninput')
-
   // Nettoyer le timer précédent s'il existe
   if (typingTimer) {
     clearTimeout(typingTimer)
@@ -164,12 +162,12 @@ const prepareRechercheEmployes = (): void => {
   if (txtCritere.value === null) {
     txtCritere.value = ''
   }
+  const tCritere = txtCritere.value.trim() //variable pour éviter le trim sur txtCritere.value
   if (txtCritere.value !== '') {
-    typeCritere = detectStringType(txtCritere.value)
-    txtCritere.value = txtCritere.value.trim()
+    typeCritere = detectStringType(tCritere)
   }
-  if (critereUniteId.value > 1 || txtCritere.value !== '') {
-    rechercheEmployes(critereUniteId.value, typeCritere, txtCritere.value, bEmployeDesactive.value, props.nombreMaximumRetour)
+  if (critereUniteId.value > 1 || tCritere !== '') {
+    rechercheEmployes(critereUniteId.value, typeCritere, tCritere, bEmployeDesactive.value, props.nombreMaximumRetour)
   }
 }
 
@@ -186,7 +184,6 @@ const rechercheEmployes = async (idUO: number, typeCritere: string, critere: str
     "bemployedesactive": ibEmployeDesactive,
     "nombremaximumretour": nbrRetour
   }
-  console.log(JSON.stringify(oCritere))
   const response: ApiResponseEL = await getEmployesListe(props.ssServer, props.ssPage, JSON.stringify(oCritere))
   employesListe.value = response.success && response.data ? response.data : []
   if (employesListe.value.length < nbrRetour) {
@@ -194,7 +191,6 @@ const rechercheEmployes = async (idUO: number, typeCritere: string, critere: str
   } else {
     libelleListe.value = `Choix employe (${employesListe.value.length}). Attention, plus de ${nbrRetour} employés correspondent aux critères`
   }
-
 }
 
 const choixEmploye = (employe: Employe): void => {
@@ -223,7 +219,6 @@ const choixUnite = (): void => {
 
 const receptionUniteOrg = (jsonData: string) => {
   dialogChoixUO.value = false
-  console.log(`Réception unité organisationnelle \njson: ${jsonData}`)
   const uoChoisie: UniteOrganisationnelle = JSON.parse(jsonData)
   critereUniteId.value = uoChoisie.id
   critereUniteLibelle.value = uoChoisie.description
